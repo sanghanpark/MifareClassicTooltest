@@ -20,14 +20,16 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context="de.svws_nfc.simpleclone.SimpleCloneActivity">
 
     <TextView
         android:id="@+id/tvMessage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="카드키를 스마트폰 뒷면에 인식하세요"
+        android:text="@string/text_hold_existing_card"
         android:textSize="18sp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -38,7 +40,7 @@
         android:id="@+id/btnAction"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="복사시작"
+        android:text="@string/action_start_copy"
         app:layout_constraintTop_toBottomOf="@id/tvMessage"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
