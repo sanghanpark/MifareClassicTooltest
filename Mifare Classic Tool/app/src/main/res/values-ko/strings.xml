@@ -8,4 +8,5 @@
     <string name="text_copy_step2">복사2단계 진행중</string>
     <string name="action_start_copy">복사시작</string>
     <string name="action_start_copy_step2">복사2단계 시작</string>
+    <string name="title_activity_simple_clone">단순 복제</string>
 </resources>
