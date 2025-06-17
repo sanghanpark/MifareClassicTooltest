@@ -46,6 +46,7 @@
     <string name="title_activity_diff_tool">Diff Tool</string>
     <string name="title_activity_bcc_tool">BCC Calculator</string>
     <string name="title_activity_clone_uid">Clone UID to Magic Tag (2nd gen)</string>
+    <string name="title_activity_simple_clone">Simple Clone</string>
     <string name="title_activity_import_export_tool">Import/Export Tool</string>
     <string name="title_activity_uid_log_tool">UID Log</string>
     <string name="title_activity_data_conversion_tool">Data Conversion Tool</string>

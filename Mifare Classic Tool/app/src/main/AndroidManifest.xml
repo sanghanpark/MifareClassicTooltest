@@ -190,6 +190,11 @@
             android:label="@string/title_activity_clone_uid" >
         </activity>
         <activity
+            android:name="de.svws_nfc.simpleclone.SimpleCloneActivity"
+            android:configChanges="orientation|screenSize"
+            android:icon="@drawable/clone_uid"
+            android:label="@string/title_activity_simple_clone" />
+        <activity
             android:name=".Activities.ImportExportTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/value_block_tool"
