@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package de.svws_nfc.simpleclone
 
 import android.app.Application
@@ -35,7 +34,6 @@ class CloneViewModel(app: Application) : AndroidViewModel(app) {
     val uiState = MutableLiveData(UiState())
 
     var service: CloneService? = null
-
     fun onTagScanned(tag: Tag) {
         when (uiState.value?.phase) {
             Phase.WAIT_READ -> {
