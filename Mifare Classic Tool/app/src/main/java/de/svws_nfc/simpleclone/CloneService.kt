@@ -34,4 +34,3 @@ class CloneService {
         // TODO implement NFC write logic
     }
 }
-
