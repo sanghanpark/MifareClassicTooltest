@@ -37,7 +37,7 @@ public class SimpleCloneActivity extends BasicActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_simple_clone);
         viewModel = new ViewModelProvider(this).get(CloneViewModel.class);
-        viewModel.service = new CloneService();
+        viewModel.setService(new CloneService());
 
         viewModel.getUiState().observe(this, state -> {
             // TODO: 단계별 메시지/버튼 상태 업데이트
@@ -45,7 +45,7 @@ public class SimpleCloneActivity extends BasicActivity {
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         if (tag != null) viewModel.onTagScanned(tag);
