@@ -21,6 +21,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
 import androidx.lifecycle.ViewModelProvider;
+import de.syss.MifareClassicTool.R;
 
 import de.syss.MifareClassicTool.Activities.BasicActivity;
 
