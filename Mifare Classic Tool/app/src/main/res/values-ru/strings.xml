@@ -44,6 +44,7 @@
     <string name="title_activity_diff_tool">Инструмент сравнения</string>
     <string name="title_activity_bcc_tool">Калькулятор BCC</string>
     <string name="title_activity_clone_uid">Клонировать UID в Magic Tag (2-го поколения)</string>
+    <string name="title_activity_simple_clone">Простое клонирование</string>
     <string name="title_activity_import_export_tool">Инструмент импорта/экспорта</string>
     <string name="title_activity_uid_log_tool">Лог UID</string>
     <string name="title_activity_data_conversion_tool">Инструмент преобразования данных</string>

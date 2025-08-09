@@ -48,6 +48,7 @@
     <string name="title_activity_diff_tool">差异比较</string>
     <string name="title_activity_bcc_tool">BCC计算器</string>
     <string name="title_activity_clone_uid">将UID克隆到2代魔术卡</string>
+    <string name="title_activity_simple_clone">简易克隆</string>
     <string name="title_activity_import_export_tool">导入/导出工具</string>
     <string name="title_activity_uid_log_tool">UID日志</string>
     <string name="title_activity_data_conversion_tool">数据转换工具</string>
