@@ -18,13 +18,12 @@ public class SimpleCloneActivity extends AppCompatActivity {
     private TextView tvStatus;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_simple_clone);
 
         tvStatus = findViewById(R.id.tvStatus);
         viewModel = new ViewModelProvider(this).get(CloneViewModel.class);
-
         viewModel.getUiState().observe(this, state -> {
             if (state != null) {
                 tvStatus.setText(state.getStatusText());
@@ -44,7 +43,7 @@ public class SimpleCloneActivity extends AppCompatActivity {
     private void handleIntent(Intent intent) {
         if (intent == null) return;
 
-        final Tag tag;
+        Tag tag;
         if (Build.VERSION.SDK_INT >= 33) {
             tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
         } else {

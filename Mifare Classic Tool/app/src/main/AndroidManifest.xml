@@ -8,9 +8,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- Required hardware -->
     <uses-feature
         android:name="android.hardware.nfc"
         android:required="true" />
@@ -36,9 +38,10 @@
             </intent-filter>
         </activity>
 
+        <!-- Alias used for NFC TECH discovery -->
         <activity-alias
-            android:targetActivity=".Activities.MainMenu"
             android:name=".MainMenuAlias"
+            android:targetActivity=".Activities.MainMenu"
             android:label="@string/title_activity_main"
             android:exported="true"
             android:launchMode="singleTop">
@@ -51,18 +54,18 @@
                 android:resource="@xml/nfc_tech_filter" />
         </activity-alias>
 
-        <!-- Content Provider -->
+        <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:grantUriPermissions="true"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
-            android:authorities="${applicationId}.fileprovider">
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_provider_paths" />
         </provider>
 
-        <!-- Delegate the user's locale preference pre Android T -->
+        <!-- AppCompat locales service -->
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
             android:enabled="false"
@@ -72,7 +75,7 @@
                 android:value="true" />
         </service>
 
-        <!-- Other Activities -->
+        <!-- Other activities -->
         <activity
             android:name=".Activities.KeyMapCreator"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -132,7 +135,7 @@
             android:name=".Activities.ValueBlockTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/value_block_tool"
-            android:label="@string"title_activity_value_block_tool" />
+            android:label="@string/title_activity_value_block_tool" />
         <activity
             android:name=".Activities.CopyActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

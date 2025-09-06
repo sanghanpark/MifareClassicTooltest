@@ -12,10 +12,9 @@ data class UiState(val statusText: String = "NFC 태그를 기기 뒷면에 갖�
 
 class CloneViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Expose UI state via LiveData (compatible with existing Java code)
+    // Expose UI state via LiveData (Java-compatible)
     private val _uiState = MutableLiveData(UiState())
     val uiState: LiveData<UiState> get() = _uiState
-    // Keep method for Java callers using getUiState()
     fun getUiState(): LiveData<UiState> = _uiState
 
     fun onTagScanned(tag: Tag) {
