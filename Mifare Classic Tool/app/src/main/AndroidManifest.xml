@@ -218,7 +218,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_copy_wizard"
             android:launchMode="singleTop"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
