@@ -1,43 +1,20 @@
 package de.svws_nfc.simpleclone
 
-import android.app.Application
 import android.nfc.Tag
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 
-class CloneViewModel(app: Application) : AndroidViewModel(app) {
+data class UiState(val statusText: String = "NFC 태그를 기기 뒷면에 갖다 대세요.")
 
-    enum class Phase { WAIT_READ, READ_RUNNING, WAIT_WRITE, WRITE_RUNNING, DONE, ERROR }
+class CloneViewModel : ViewModel() {
 
-    data class UiState(
-        val phase: Phase = Phase.WAIT_READ,
-        val message: String = "",
-        val progress: Int = 0
-    )
-
-    val uiState = MutableLiveData(UiState())
+    private val _uiState = MutableLiveData(UiState())
+    fun getUiState(): LiveData<UiState> = _uiState
 
     fun onTagScanned(tag: Tag) {
-        when (uiState.value?.phase) {
-            Phase.WAIT_READ -> {
-                service?.startRead(tag)
-            }
-            Phase.WAIT_WRITE -> {
-                service?.startWrite(tag)
-            }
-            else -> {} // DONE, ERROR 일 땐 무시
-        }
+        val uid = tag.id?.joinToString("") { b -> "%02X".format(b) } ?: "unknown"
+        _uiState.postValue(UiState(statusText = "Tag UID: $uid 인식됨"))
+        // TODO: Hook up CloneService if/when it exists.
     }
-
-    /** Service 콜백이 호출할 메서드 */
-    fun update(phase: CloneService.Phase, msg: String) {
-        when (phase) {
-            CloneService.Phase.READ  ->
-                uiState.postValue(uiState.value?.copy(phase = Phase.READ_RUNNING, message = msg))
-            CloneService.Phase.WRITE ->
-                uiState.postValue(uiState.value?.copy(phase = Phase.WRITE_RUNNING, message = msg))
-        }
-    }
-
-    // ...추가 로직
 }

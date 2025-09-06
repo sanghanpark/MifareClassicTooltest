@@ -26,6 +26,13 @@ public class CopyController {
         this.activity = activity;
     }
 
+    private static String bytesToHex(byte[] data) {
+        if (data == null) return "";
+        StringBuilder sb = new StringBuilder(data.length * 2);
+        for (byte b : data) sb.append(String.format("%02X", b));
+        return sb.toString();
+    }
+
     /**
      * Called when an NFC tag is discovered.
      */
@@ -39,7 +46,7 @@ public class CopyController {
                 dump = reader.readAsMuchAsPossible(Common.getKeyMap());
                 reader.close();
                 dumpFile = saveDump(dump);
-                String uid = Common.byte2HexString(tag.getId());
+                String uid = bytesToHex(tag.getId());
                 updateUi(activity.getString(R.string.text_copy_start_source, uid), true);
                 state = CopyState.READY_TO_READ;
                 break;
