@@ -19,7 +19,9 @@
 -->
 
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="de.syss.MifareClassicTool">
 
     <uses-permission android:name="android.permission.NFC" />
 
@@ -215,24 +217,20 @@
 
         <activity
             android:name=".ui.copywizard.CopyWizardActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_copy_wizard"
-        codex/set-up-project-and-verify-nfc-features-hq6qc7
+       codex/set-up-project-and-verify-nfc-features-heslwo
+            android:exported="true"
             android:launchMode="singleTop"
-            android:exported="true">
+            android:label="@string/app_name">
 
-        master
-            <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*" />
-            </intent-filter>
+            <!-- NFC TECH filter -->
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
+
             <meta-data
                 android:name="android.nfc.action.TECH_DISCOVERED"
-                android:resource="@xml/nfc_copy_wizard_tech_filter" />
+                android:resource="@xml/nfc_tech_filter" />
+         master
         </activity>
 
     </application>
