@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+/*
+ * Copyright 2013 Gerhard Klostermeier
+ * GPLv3
+ */
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Permissions -->
@@ -20,7 +25,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
 
-        <!-- Launcher -->
+        <!-- Main Activity -->
         <activity
             android:name=".Activities.MainMenu"
             android:configChanges="orientation|screenSize"
@@ -40,6 +45,7 @@
             android:label="@string/title_activity_main"
             android:exported="true"
             android:launchMode="singleTop">
+            <!-- NFC Tech Filter -->
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
@@ -175,7 +181,7 @@
             android:icon="@drawable/hex_to_ascii"
             android:label="@string/title_activity_data_conversion_tool" />
 
-        <!-- Copy Wizard: single declaration with NFC TECH filter -->
+        <!-- Copy Wizard (NFC TECH_DISCOVERED entry) -->
         <activity
             android:name=".ui.copywizard.CopyWizardActivity"
             android:exported="true"

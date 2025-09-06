@@ -18,15 +18,14 @@ public class SimpleCloneActivity extends AppCompatActivity {
     private TextView tvStatus;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_simple_clone);
 
         tvStatus = findViewById(R.id.tvStatus);
-
         viewModel = new ViewModelProvider(this).get(CloneViewModel.class);
         viewModel.getUiState().observe(this, state -> {
-            if (state != null && tvStatus != null) {
+            if (state != null) {
                 tvStatus.setText(state.getStatusText());
             }
         });
@@ -34,8 +33,9 @@ public class SimpleCloneActivity extends AppCompatActivity {
         handleIntent(getIntent());
     }
 
+    // Must be public so Android can call it
     @Override
-    public void onNewIntent(Intent intent) { // keep as public
+    public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         handleIntent(intent);
     }
@@ -50,6 +50,7 @@ public class SimpleCloneActivity extends AppCompatActivity {
             //noinspection deprecation
             tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         }
+
         if (tag != null) {
             viewModel.onTagScanned(tag);
         }
