@@ -4,32 +4,54 @@ import android.content.Intent;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
-import de.syss.MifareClassicTool.Activities.BasicActivity;
+import de.syss.MifareClassicTool.BasicActivity;
+import de.syss.MifareClassicTool.R;
 
-/**
- * 단순 2-단계 카드 복제를 위한 전용 화면.
- * READ 단계 → WRITE 단계로만 흐르며, 나머지 세부 옵션은 자동 처리된다.
- */
 public class SimpleCloneActivity extends BasicActivity {
+
     private CloneViewModel viewModel;
+    private TextView txtStatus;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_simple_clone);  // layout 은 다음 단계에서 생성
+        setContentView(R.layout.activity_simple_clone);
+
+        txtStatus = findViewById(R.id.txtStatus);
         viewModel = new ViewModelProvider(this).get(CloneViewModel.class);
 
         viewModel.getUiState().observe(this, state -> {
-            // TODO: 단계별 메시지/버튼 상태 업데이트
+            if (state != null) {
+                txtStatus.setText(state.getStatusText());
+            }
         });
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    // Must be public to match BasicActivity signature
+    @Override
+    public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if (intent == null) return;
+
+        // For API 33+ you can use: getParcelableExtra(String, Class)
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        if (tag != null) viewModel.onTagScanned(tag);
+        if (tag != null) {
+            viewModel.onTagScanned(tag);
+        }
     }
 }
