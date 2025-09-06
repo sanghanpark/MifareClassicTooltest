@@ -213,6 +213,24 @@
             android:label="@string/title_activity_data_conversion_tool" >
         </activity>
 
+        <activity
+            android:name=".ui.copywizard.CopyWizardActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_copy_wizard"
+            android:launchMode="singleTop" >
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.TECH_DISCOVERED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/nfc_copy_wizard_tech_filter" />
+        </activity>
+
     </application>
 
 </manifest>
