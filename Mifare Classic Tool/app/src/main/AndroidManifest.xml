@@ -217,6 +217,9 @@
 
         <activity
             android:name=".ui.copywizard.CopyWizardActivity"
+
+       codex/set-up-project-and-verify-nfc-features-heslwo
+        master
             android:exported="true"
             android:launchMode="singleTop"
             android:label="@string/app_name">
@@ -225,6 +228,17 @@
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
+          codex/set-up-project-and-verify-nfc-features-mksuu4
+
+
+            <meta-data
+                android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/nfc_tech_filter" />
+         master
+        </activity>
+
+    </application>
+  master
 
             <meta-data
                 android:name="android.nfc.action.TECH_DISCOVERED"
