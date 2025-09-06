@@ -19,10 +19,21 @@ android {
         generateLocaleConfig true
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     buildTypes {
+        debug {
+            // Verbose logging for development builds
+            buildConfigField "boolean", "ENABLE_LOG", "true"
+            minifyEnabled false
+        }
         release {
             minifyEnabled false
             shrinkResources false
+            // Disable debug logs in release builds
+            buildConfigField "boolean", "ENABLE_LOG", "false"
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
