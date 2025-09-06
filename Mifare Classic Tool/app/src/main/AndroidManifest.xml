@@ -217,8 +217,11 @@
             android:name=".ui.copywizard.CopyWizardActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_copy_wizard"
+        codex/set-up-project-and-verify-nfc-features-hq6qc7
             android:launchMode="singleTop"
             android:exported="true">
+
+        master
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
