@@ -132,7 +132,7 @@
             android:name=".Activities.ValueBlockTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/value_block_tool"
-            android:label="@string/title_activity_value_block_tool" />
+            android:label="@string"title_activity_value_block_tool" />
         <activity
             android:name=".Activities.CopyActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
