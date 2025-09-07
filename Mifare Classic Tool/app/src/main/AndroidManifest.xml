@@ -110,7 +110,7 @@
             android:name=".Activities.ReadTag"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:icon="@drawable/read_tag"
-            android:label="@string/title_activity_read_tag" />
+            android:label="@string"title_activity_read_tag" />
         <activity
             android:name=".Activities.KeyEditor"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -181,7 +181,7 @@
             android:icon="@drawable/hex_to_ascii"
             android:label="@string/title_activity_data_conversion_tool" />
 
-        <!-- Copy Wizard (NFC TECH_DISCOVERED entry) -->
+        <!-- Copy Wizard (TECH_DISCOVERED entry) -->
         <activity
             android:name=".ui.copywizard.CopyWizardActivity"
             android:exported="true"
@@ -195,7 +195,7 @@
                 android:resource="@xml/nfc_tech_filter" />
         </activity>
 
-        <!-- Foreground cloning service -->
+        <!-- Foreground cloning service (optional) -->
         <service
             android:name="de.svws_nfc.simpleclone.CloneService"
             android:exported="false"
