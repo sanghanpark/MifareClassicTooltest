@@ -3,33 +3,55 @@ package de.svws_nfc.simpleclone;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.os.Build;
 import android.os.Bundle;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import de.syss.MifareClassicTool.Activities.BasicActivity;
+import de.syss.MifareClassicTool.R;
 
-/**
- * 단순 2-단계 카드 복제를 위한 전용 화면.
- * READ 단계 → WRITE 단계로만 흐르며, 나머지 세부 옵션은 자동 처리된다.
- */
-public class SimpleCloneActivity extends BasicActivity {
+public class SimpleCloneActivity extends AppCompatActivity {
+
     private CloneViewModel viewModel;
+    private TextView tvStatus;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_simple_clone);  // layout 은 다음 단계에서 생성
-        viewModel = new ViewModelProvider(this).get(CloneViewModel.class);
+        setContentView(R.layout.activity_simple_clone);
 
+        tvStatus = findViewById(R.id.tvStatus);
+        viewModel = new ViewModelProvider(this).get(CloneViewModel.class);
         viewModel.getUiState().observe(this, state -> {
-            // TODO: 단계별 메시지/버튼 상태 업데이트
+            if (state != null) {
+                tvStatus.setText(state.getStatusText());
+            }
         });
+
+        handleIntent(getIntent());
     }
 
+    // Must be public so Android can call it
     @Override
-    protected void onNewIntent(Intent intent) {
+    public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        if (tag != null) viewModel.onTagScanned(tag);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent == null) return;
+
+        final Tag tag;
+        if (Build.VERSION.SDK_INT >= 33) {
+            tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
+        } else {
+            //noinspection deprecation
+            tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        }
+        if (tag != null) {
+            viewModel.onTagScanned(tag);
+        }
     }
 }
