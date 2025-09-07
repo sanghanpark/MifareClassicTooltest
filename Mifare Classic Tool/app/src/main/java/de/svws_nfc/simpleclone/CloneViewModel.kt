@@ -12,9 +12,13 @@ data class UiState(val statusText: String = "NFC 태그를 기기 뒷면에 갖�
 
 class CloneViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Expose UI state via LiveData (Java-compatible)
+    // Backing state
     private val _uiState = MutableLiveData(UiState())
-    val uiState: LiveData<UiState> get() = _uiState
+
+    // Kotlin-friendly property with a distinct name (avoids getUiState() clash)
+    val uiStateLiveData: LiveData<UiState> get() = _uiState
+
+    // Java-friendly method (used by SimpleCloneActivity)
     fun getUiState(): LiveData<UiState> = _uiState
 
     fun onTagScanned(tag: Tag) {
@@ -25,7 +29,7 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
     fun startClone() {
         val ctx = getApplication<Application>()
         try {
-            // Use reflection so this compiles even if CloneService is not present yet
+            // Reflection keeps this compiling even if CloneService isn't present yet
             val svcClass = Class.forName("de.svws_nfc.simpleclone.CloneService")
             val intent = Intent(ctx, svcClass).apply {
                 action = "de.svws_nfc.simpleclone.action.START"
