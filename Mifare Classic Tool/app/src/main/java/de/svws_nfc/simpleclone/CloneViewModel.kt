@@ -1,43 +1,61 @@
 package de.svws_nfc.simpleclone
 
 import android.app.Application
+import android.content.Intent
 import android.nfc.Tag
+import android.os.Build
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
-class CloneViewModel(app: Application) : AndroidViewModel(app) {
+data class UiState(val statusText: String = "NFC 태그를 기기 뒷면에 갖다 대세요.")
 
-    enum class Phase { WAIT_READ, READ_RUNNING, WAIT_WRITE, WRITE_RUNNING, DONE, ERROR }
+class CloneViewModel(application: Application) : AndroidViewModel(application) {
 
-    data class UiState(
-        val phase: Phase = Phase.WAIT_READ,
-        val message: String = "",
-        val progress: Int = 0
-    )
+    // Backing state
+    private val _uiState = MutableLiveData(UiState())
 
-    val uiState = MutableLiveData(UiState())
+    // Renamed to avoid JVM signature clash with getUiState()
+    val uiStateLiveData: LiveData<UiState> get() = _uiState
+
+    // Kept for Java callers (e.g., SimpleCloneActivity)
+    fun getUiState(): LiveData<UiState> = _uiState
 
     fun onTagScanned(tag: Tag) {
-        when (uiState.value?.phase) {
-            Phase.WAIT_READ -> {
-                service?.startRead(tag)
+        val uid = tag.id?.joinToString("") { b -> "%02X".format(b) } ?: "unknown"
+        _uiState.postValue(UiState(statusText = "Tag UID: $uid 인식됨"))
+    }
+
+    // Optional: start/stop service hooks (safe even if service class isn't present)
+    fun startClone() {
+        val ctx = getApplication<Application>()
+        try {
+            val svcClass = Class.forName("de.svws_nfc.simpleclone.CloneService")
+            val intent = Intent(ctx, svcClass).apply {
+                action = "de.svws_nfc.simpleclone.action.START"
             }
-            Phase.WAIT_WRITE -> {
-                service?.startWrite(tag)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ctx.startForegroundService(intent)
+            } else {
+                ctx.startService(intent)
             }
-            else -> {} // DONE, ERROR 일 땐 무시
+            _uiState.postValue(UiState(statusText = "복제를 시작했습니다. 태그를 대세요."))
+        } catch (_: ClassNotFoundException) {
+            _uiState.postValue(UiState(statusText = "CloneService가 없습니다. 나중에 추가해 주세요."))
         }
     }
 
-    /** Service 콜백이 호출할 메서드 */
-    fun update(phase: CloneService.Phase, msg: String) {
-        when (phase) {
-            CloneService.Phase.READ  ->
-                uiState.postValue(uiState.value?.copy(phase = Phase.READ_RUNNING, message = msg))
-            CloneService.Phase.WRITE ->
-                uiState.postValue(uiState.value?.copy(phase = Phase.WRITE_RUNNING, message = msg))
+    fun stopClone() {
+        val ctx = getApplication<Application>()
+        try {
+            val svcClass = Class.forName("de.svws_nfc.simpleclone.CloneService")
+            val intent = Intent(ctx, svcClass).apply {
+                action = "de.svws_nfc.simpleclone.action.STOP"
+            }
+            ctx.startService(intent)
+            _uiState.postValue(UiState(statusText = "복제를 중지했습니다."))
+        } catch (_: ClassNotFoundException) {
+            _uiState.postValue(UiState(statusText = "CloneService가 없어 중지 요청을 보낼 수 없습니다."))
         }
     }
-
-    // ...추가 로직
 }
