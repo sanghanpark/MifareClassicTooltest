@@ -112,14 +112,16 @@ public class CopyWizardActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        final Tag tag;
         if (intent == null) return;
+
+        final Tag tag;
         if (Build.VERSION.SDK_INT >= 33) {
             tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
         } else {
             //noinspection deprecation
             tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         }
+
         if (tag != null) {
             if (autoMode) {
                 onTagDiscoveredAuto(tag);

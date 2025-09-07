@@ -110,7 +110,7 @@
             android:name=".Activities.ReadTag"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:icon="@drawable/read_tag"
-            android:label="@string"title_activity_read_tag" />
+            android:label="@string/title_activity_read_tag" />
         <activity
             android:name=".Activities.KeyEditor"
             android:configChanges="keyboardHidden|orientation|screenSize"
