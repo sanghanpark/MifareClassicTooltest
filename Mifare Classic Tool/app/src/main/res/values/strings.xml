@@ -689,6 +689,22 @@
     <string name="hint_key">HEX, 6 bytes per line</string>
 
     <!-- Copy/Clone wizard messages -->
+    <string name="title_activity_copy_wizard">복사 마법사</string>
+    <string name="copy_wizard_read_top">읽기 단계</string>
+    <string name="copy_wizard_read_sub">원본 태그를 기기 뒷면에 대세요</string>
+    <string name="copy_wizard_read_button">읽기</string>
+    <string name="copy_wizard_write_top">쓰기 단계</string>
+    <string name="copy_wizard_write_sub">대상 태그를 기기 뒷면에 대세요</string>
+    <string name="copy_wizard_write_button">쓰기</string>
+    <string name="copy_wizard_uid_recognized">UID : %1$s 카드키가 인식되었습니다. 1단계완료시까지 카드키를 떼지마세요</string>
+    <string name="copy_wizard_write_detected">인식되었습니다. 2단계완료시까지 떼지마세요</string>
+    <string name="copy_wizard_clone_finished">복사가 완료되었습니다.</string>
+    <string name="copy_wizard_enable_block0">제조사 블록 쓰기(UID 포함) 활성화 — 위험, 법적 준수/승인 환경에서만 사용</string>
+    <string name="copy_wizard_block0_consent_toast">제조사 블록 쓰기를 활성화하려면 동의 체크박스를 선택하세요</string>
+    <string name="copy_wizard_error_no_mfc_device">This device does not support MIFARE Classic.</string>
+    <string name="copy_wizard_error_tag_not_magic">This tag does not support UID writing (standard card).</string>
+    <string name="copy_wizard_error_key_map">Failed to map keys for sectors: %1$s. Please provide the correct key file.</string>
+    <string name="copy_wizard_nfc_off">NFC is turned off. Enable it in settings.</string>
 
     <!-- Supported locales. No need for translation! -->
     <string-array name="supported_locales" translatable="false">
@@ -700,4 +716,12 @@
         <item>简体中文 (zh)</item>
     </string-array>
 
+<string name="mct_prompt_present_original">기존 카드키를 스마트폰 뒷면에 인식한 채로 유지하세요</string>
+<string name="mct_uid_detected_step1">UID : %1$s 카드키가 인식되었습니다. 1단계완료시까지 카드키를 떼지마세요</string>
+<string name="mct_copy_start">복사시작</string>
+<string name="mct_copy_step1_running">복사1단계진행중</string>
+<string name="mct_prompt_present_modukey">모두키를 스마트폰 뒷면에 인식시켜주세요</string>
+<string name="mct_detected_step2">인식되었습니다. 2단계완료시까지 떼지마세요</string>
+<string name="mct_copy_step2_running">복사2단계진행중</string>
+<string name="mct_copy_done">복사가 완료되었습니다.</string>
 </resources>
