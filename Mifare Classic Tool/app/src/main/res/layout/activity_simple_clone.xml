@@ -12,5 +12,4 @@
         android:text="NFC 태그를 기기 뒷면에 갖다 대세요."
         android:textSize="18sp"
         android:padding="16dp" />
-
 </LinearLayout>

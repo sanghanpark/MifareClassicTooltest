@@ -179,9 +179,9 @@
             android:name=".Activities.DataConversionTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/hex_to_ascii"
-            android:label="@string"title_activity_data_conversion_tool" />
+            android:label="@string/title_activity_data_conversion_tool" />
 
-        <!-- Copy Wizard (single declaration with NFC TECH filter) -->
+        <!-- Copy Wizard (NFC TECH_DISCOVERED entry) -->
         <activity
             android:name=".ui.copywizard.CopyWizardActivity"
             android:exported="true"
