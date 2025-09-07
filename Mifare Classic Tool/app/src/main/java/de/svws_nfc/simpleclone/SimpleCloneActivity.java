@@ -26,7 +26,7 @@ public class SimpleCloneActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(CloneViewModel.class);
         viewModel.getUiState().observe(this, state -> {
-            if (state != null && tvStatus != null) {
+            if (state != null) {
                 tvStatus.setText(state.getStatusText());
             }
         });
@@ -34,8 +34,9 @@ public class SimpleCloneActivity extends AppCompatActivity {
         handleIntent(getIntent());
     }
 
+    // Must be public so Android can call it
     @Override
-    public void onNewIntent(Intent intent) { // keep as public
+    public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         handleIntent(intent);
     }
@@ -43,13 +44,14 @@ public class SimpleCloneActivity extends AppCompatActivity {
     private void handleIntent(Intent intent) {
         if (intent == null) return;
 
-        Tag tag;
+        final Tag tag;
         if (Build.VERSION.SDK_INT >= 33) {
             tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
         } else {
             //noinspection deprecation
             tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         }
+
         if (tag != null) {
             viewModel.onTagScanned(tag);
         }

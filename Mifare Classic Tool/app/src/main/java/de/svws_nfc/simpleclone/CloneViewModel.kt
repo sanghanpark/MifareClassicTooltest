@@ -15,10 +15,10 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
     // Backing state
     private val _uiState = MutableLiveData(UiState())
 
-    // Renamed to avoid JVM signature clash with getUiState()
+    // Kotlin-friendly property with a distinct name (avoids getUiState() clash)
     val uiStateLiveData: LiveData<UiState> get() = _uiState
 
-    // Kept for Java callers (e.g., SimpleCloneActivity)
+    // Java-friendly method (used by SimpleCloneActivity)
     fun getUiState(): LiveData<UiState> = _uiState
 
     fun onTagScanned(tag: Tag) {
@@ -26,10 +26,10 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.postValue(UiState(statusText = "Tag UID: $uid 인식됨"))
     }
 
-    // Optional: start/stop service hooks (safe even if service class isn't present)
     fun startClone() {
         val ctx = getApplication<Application>()
         try {
+            // Reflection keeps this compiling even if CloneService isn't present yet
             val svcClass = Class.forName("de.svws_nfc.simpleclone.CloneService")
             val intent = Intent(ctx, svcClass).apply {
                 action = "de.svws_nfc.simpleclone.action.START"
