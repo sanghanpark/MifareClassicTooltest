@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.MifareClassic;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -26,8 +27,9 @@ public class CopyWizardActivity extends AppCompatActivity {
     public static final int STEP_WRITE = 2;
     public static final String EXTRA_AUTO_MODE = "extra.AUTO_MODE";
 
+    private enum AutoState { IDLE, READING, WAITING_MODUKEY, WRITING, DONE }
+
     private boolean autoMode = false;
-    private enum AutoState { IDLE, READING, SAVING, WAITING_MODUKEY, WRITING, DONE }
     private AutoState autoState = AutoState.IDLE;
     private String lastSavedDumpPath = null;
 
@@ -48,6 +50,7 @@ public class CopyWizardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_copy_wizard);
+
         autoMode = getIntent().getBooleanExtra(EXTRA_AUTO_MODE, false);
 
         mTopMessage = findViewById(R.id.top_message);
@@ -63,6 +66,7 @@ public class CopyWizardActivity extends AppCompatActivity {
 
         mPrimaryButton.setOnClickListener(v -> {
             if (mState == STEP_READ) {
+                // Auto-select all key files and start mapping+reading
                 selectAllKeyFiles();
                 startMappingAndReadTag();
             } else if (mState == STEP_WRITE) {
@@ -108,7 +112,16 @@ public class CopyWizardActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        if (intent == null) return;
+
+        final Tag tag;
+        if (Build.VERSION.SDK_INT >= 33) {
+            tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
+        } else {
+            //noinspection deprecation
+            tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        }
+
         if (tag != null) {
             if (autoMode) {
                 onTagDiscoveredAuto(tag);
@@ -135,7 +148,7 @@ public class CopyWizardActivity extends AppCompatActivity {
     }
 
     private void selectAllKeyFiles() {
-        // existing selection logic handled internally by coordinator
+        // Selection is handled internally by the coordinator, keep placeholder for future use.
     }
 
     private void startMappingAndReadTag() {
@@ -151,24 +164,15 @@ public class CopyWizardActivity extends AppCompatActivity {
                     updateUi();
                     if (autoMode) {
                         lastSavedDumpPath = file.getAbsolutePath();
-                        showStatus(getString(R.string.mct_copy_step1_running));
                         autoState = AutoState.WAITING_MODUKEY;
-                        showStatus(getString(R.string.mct_prompt_present_modukey));
+                        // Prompt user for the writable (MODUKEY) tag using existing strings
+                        mTopMessage.setText(R.string.copy_wizard_write_top);
                     }
                 });
             } else if (err != null) {
                 runOnUiThread(() -> Toast.makeText(this, err, Toast.LENGTH_LONG).show());
             }
         }).start();
-    }
-
-    private String autoSaveDump(String suggestedName, byte[] dump) {
-        File outFile = Common.getFile(Common.DUMPS_DIR + "/" + suggestedName);
-        if (outFile.getParentFile() != null) {
-            outFile.getParentFile().mkdirs();
-        }
-        // Dump saving handled elsewhere; return path
-        return outFile.getAbsolutePath();
     }
 
     private void enableWriteManufacturerBlock() {
@@ -190,7 +194,6 @@ public class CopyWizardActivity extends AppCompatActivity {
                 if (success) {
                     Toast.makeText(this, R.string.copy_wizard_clone_finished, Toast.LENGTH_LONG).show();
                     if (autoMode) {
-                        showStatus(getString(R.string.mct_copy_done));
                         autoState = AutoState.DONE;
                     }
                 } else if (err != null) {
@@ -202,21 +205,19 @@ public class CopyWizardActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void showStatus(String message) {
-        runOnUiThread(() -> mTopMessage.setText(message));
-    }
-
     private void onTagDiscoveredAuto(Tag tag) {
         currentTag = tag;
         switch (autoState) {
-            case IDLE:
-                showStatus(getString(R.string.mct_uid_detected_step1, toUid(tag)));
+            case IDLE: {
+                String uid = Common.bytes2Hex(tag.getId());
+                mTopMessage.setText(getString(R.string.copy_wizard_uid_recognized, uid));
                 selectAllKeyFiles();
                 startMappingAndReadTag();
                 autoState = AutoState.READING;
                 break;
-            case WAITING_MODUKEY:
-                showStatus(getString(R.string.mct_detected_step2));
+            }
+            case WAITING_MODUKEY: {
+                mTopMessage.setText(R.string.copy_wizard_write_detected);
                 enableWriteManufacturerBlock();
                 if (lastSavedDumpPath != null) {
                     selectDumpFile(lastSavedDumpPath);
@@ -224,17 +225,11 @@ public class CopyWizardActivity extends AppCompatActivity {
                 writeDumpClone();
                 autoState = AutoState.WRITING;
                 break;
+            }
             default:
+                // Ignore other states
                 break;
         }
-    }
-
-    private String toUid(Tag tag) {
-        byte[] id = tag.getId();
-        if (id == null) return "unknown";
-        StringBuilder sb = new StringBuilder();
-        for (byte b : id) sb.append(String.format("%02X", b));
-        return sb.toString();
     }
 
     private void updateUi() {

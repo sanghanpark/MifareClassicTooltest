@@ -23,6 +23,7 @@ public class SimpleCloneActivity extends AppCompatActivity {
         setContentView(R.layout.activity_simple_clone);
 
         tvStatus = findViewById(R.id.tvStatus);
+
         viewModel = new ViewModelProvider(this).get(CloneViewModel.class);
         viewModel.getUiState().observe(this, state -> {
             if (state != null) {
@@ -50,6 +51,7 @@ public class SimpleCloneActivity extends AppCompatActivity {
             //noinspection deprecation
             tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         }
+
         if (tag != null) {
             viewModel.onTagScanned(tag);
         }
