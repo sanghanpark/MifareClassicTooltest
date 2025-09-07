@@ -1,28 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-/*
- * Copyright 2013 Gerhard Klostermeier
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
--->
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- Required hardware -->
     <uses-feature
         android:name="android.hardware.nfc"
         android:required="true" />
@@ -33,28 +18,28 @@
         android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
+
         <!-- Main Activity -->
         <activity
             android:name=".Activities.MainMenu"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_main"
             android:exported="true"
-            android:launchMode="singleTop" >
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Alias used for NFC TECH discovery -->
         <activity-alias
-            android:targetActivity=".Activities.MainMenu"
             android:name=".MainMenuAlias"
+            android:targetActivity=".Activities.MainMenu"
             android:label="@string/title_activity_main"
             android:exported="true"
-            android:launchMode="singleTop" >
-            <!-- NFC Tech Filter -->
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
@@ -63,20 +48,18 @@
                 android:resource="@xml/nfc_tech_filter" />
         </activity-alias>
 
-        <!-- Content Providers -->
+        <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:grantUriPermissions="true"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
-            android:authorities="${applicationId}.fileprovider">
-
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_provider_paths"/>
-
+                android:resource="@xml/file_provider_paths" />
         </provider>
 
-        <!-- Delegate the user's locale preference pre Android T -->
+        <!-- AppCompat locales service -->
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
             android:enabled="false"
@@ -86,133 +69,131 @@
                 android:value="true" />
         </service>
 
-        <!-- Other Activities -->
+        <!-- Other activities -->
         <activity
             android:name=".Activities.KeyMapCreator"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:icon="@drawable/map_keys_to_sector"
-            android:label="@string/title_activity_create_key_map" >
-        </activity>
+            android:label="@string/title_activity_create_key_map" />
         <activity
             android:name=".Activities.DumpEditor"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:icon="@drawable/edit_dump"
-            android:label="@string/title_activity_dump_editor" >
-        </activity>
+            android:label="@string/title_activity_dump_editor" />
         <activity
             android:name=".Activities.FileChooser"
             android:icon="@drawable/open"
             android:label="@string/title_activity_file_chooser"
-            android:windowSoftInputMode="stateAlwaysHidden" >
-        </activity>
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".Activities.AccessConditionDecoder"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/access_conditions"
-            android:label="@string/title_activity_access_conditions" >
-        </activity>
+            android:label="@string/title_activity_access_conditions" />
         <activity
             android:name=".Activities.ValueBlocksToInt"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/value_block_to_int"
-            android:label="@string/title_activity_value_blocks" >
-        </activity>
+            android:label="@string/title_activity_value_blocks" />
         <activity
             android:name=".Activities.WriteTag"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:icon="@drawable/write_tag"
-            android:label="@string/title_activity_write_tag" >
-        </activity>
+            android:label="@string/title_activity_write_tag" />
         <activity
             android:name=".Activities.ReadTag"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:icon="@drawable/read_tag"
-            android:label="@string/title_activity_read_tag" >
-        </activity>
+            android:label="@string/title_activity_read_tag" />
         <activity
             android:name=".Activities.KeyEditor"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:icon="@drawable/edit_keys"
-            android:label="@string/title_activity_key_editor" >
-        </activity>
+            android:label="@string/title_activity_key_editor" />
         <activity
             android:name=".Activities.HelpAndInfo"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/help_and_info"
-            android:label="@string/title_activity_help" >
-        </activity>
+            android:label="@string/title_activity_help" />
         <activity
             android:name=".Activities.HexToAscii"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/hex_to_ascii"
-            android:label="@string/title_activity_hex_to_ascii" >
-        </activity>
+            android:label="@string/title_activity_hex_to_ascii" />
         <activity
             android:name=".Activities.TagInfoTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/tag_info"
-            android:label="@string/title_activity_tag_info" >
-        </activity>
+            android:label="@string/title_activity_tag_info" />
         <activity
             android:name=".Activities.ValueBlockTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/value_block_tool"
-            android:label="@string/title_activity_value_block_tool" >
-        </activity>
+            android:label="@string/title_activity_value_block_tool" />
         <activity
             android:name=".Activities.CopyActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_copy" >
-        </activity>
+            android:label="@string/title_activity_copy" />
         <activity
             android:name=".Activities.AccessConditionTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/access_condition_tool"
-            android:label="@string/title_activity_access_condition_tool" >
-        </activity>
+            android:label="@string/title_activity_access_condition_tool" />
         <activity
             android:name=".Activities.Preferences"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/preferences"
-            android:label="@string/title_activity_preferences" >
-        </activity>
+            android:label="@string/title_activity_preferences" />
         <activity
             android:name=".Activities.DiffTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/diff_tool"
-            android:label="@string/title_activity_diff_tool" >
-        </activity>
+            android:label="@string/title_activity_diff_tool" />
         <activity
             android:name=".Activities.BccTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/bcc_tool"
-            android:label="@string/title_activity_bcc_tool" >
-        </activity>
+            android:label="@string/title_activity_bcc_tool" />
         <activity
             android:name=".Activities.CloneUidTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/clone_uid"
-            android:label="@string/title_activity_clone_uid" >
-        </activity>
+            android:label="@string/title_activity_clone_uid" />
         <activity
             android:name=".Activities.ImportExportTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/value_block_tool"
-            android:label="@string/title_activity_import_export_tool" >
-        </activity>
+            android:label="@string/title_activity_import_export_tool" />
         <activity
             android:name=".Activities.UidLogTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/edit_dump"
-            android:label="@string/title_activity_uid_log_tool" >
-        </activity>
+            android:label="@string/title_activity_uid_log_tool" />
         <activity
             android:name=".Activities.DataConversionTool"
             android:configChanges="orientation|screenSize"
             android:icon="@drawable/hex_to_ascii"
-            android:label="@string/title_activity_data_conversion_tool" >
+            android:label="@string/title_activity_data_conversion_tool" />
+
+        <!-- Copy Wizard (NFC TECH_DISCOVERED entry) -->
+        <activity
+            android:name=".ui.copywizard.CopyWizardActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.nfc.action.TECH_DISCOVERED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/nfc_tech_filter" />
         </activity>
 
+        <!-- Foreground cloning service -->
+        <service
+            android:name="de.svws_nfc.simpleclone.CloneService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"
+            tools:ignore="ForegroundServiceType" />
     </application>
-
 </manifest>
