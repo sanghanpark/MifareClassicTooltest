@@ -16,15 +16,17 @@
         android:id="@+id/sub_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingBottom="16dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:paddingBottom="16dp" />
+        android:visibility="gone" />
 
     <CheckBox
         android:id="@+id/checkbox_block0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="@string/copy_wizard_enable_block0"
-        android:layout_marginBottom="8dp" />
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/primary_button"
