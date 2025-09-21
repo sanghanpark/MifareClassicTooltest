@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -32,6 +34,11 @@ public class CopyWizardActivity extends AppCompatActivity {
     private boolean autoMode = false;
     private AutoState autoState = AutoState.IDLE;
     private String lastSavedDumpPath = null;
+    private boolean hasSourceTag = false;
+    private boolean hasTargetTag = false;
+    private boolean isReadingInProgress = false;
+    private boolean isWritingInProgress = false;
+    private Animation blinkAnimation;
 
     private int mState = STEP_READ;
 
@@ -51,7 +58,12 @@ public class CopyWizardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_copy_wizard);
 
-        autoMode = getIntent().getBooleanExtra(EXTRA_AUTO_MODE, false);
+        Intent launchIntent = getIntent();
+        boolean launchAutoMode = shouldEnterAutoMode(launchIntent);
+        if (launchIntent != null && launchIntent.hasExtra(EXTRA_AUTO_MODE)) {
+            launchAutoMode = launchIntent.getBooleanExtra(EXTRA_AUTO_MODE, launchAutoMode);
+        }
+        updateAutoMode(launchAutoMode);
 
         mTopMessage = findViewById(R.id.top_message);
         mSubMessage = findViewById(R.id.sub_message);
@@ -61,31 +73,26 @@ public class CopyWizardActivity extends AppCompatActivity {
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        int flags = PendingIntent.FLAG_MUTABLE;
+        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                ? PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+                : PendingIntent.FLAG_UPDATE_CURRENT;
         mPendingIntent = PendingIntent.getActivity(this, 0, intent, flags);
 
         mPrimaryButton.setOnClickListener(v -> {
-            if (mState == STEP_READ) {
-                // Auto-select all key files and start mapping+reading
+            if (mState == STEP_READ && hasSourceTag && !isReadingInProgress) {
                 selectAllKeyFiles();
                 startMappingAndReadTag();
-            } else if (mState == STEP_WRITE) {
-                if (!mBlock0CheckBox.isChecked()) {
-                    Toast.makeText(this, R.string.copy_wizard_block0_consent_toast, Toast.LENGTH_LONG).show();
-                    return;
-                }
-                writeDumpClone();
             }
         });
 
         mSecondaryButton.setOnClickListener(v -> {
-            if (mState == STEP_WRITE) {
-                mState = STEP_READ;
-                updateUi();
+            if (mState == STEP_WRITE && hasTargetTag && !isWritingInProgress) {
+                writeDumpClone();
             }
         });
 
-        updateUi();
+        updateUi(true);
+        handleIntent(getIntent());
     }
 
     @Override
@@ -112,7 +119,48 @@ public class CopyWizardActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (intent == null) return;
+        if (intent == null) {
+            return;
+        }
+        setIntent(intent);
+        boolean nextAutoMode = shouldEnterAutoMode(intent);
+        if (intent.hasExtra(EXTRA_AUTO_MODE)) {
+            nextAutoMode = intent.getBooleanExtra(EXTRA_AUTO_MODE, nextAutoMode);
+        }
+        updateAutoMode(nextAutoMode);
+        handleIntent(intent);
+    }
+
+    private void handleTag(Tag tag) {
+        if (tag == null) {
+            return;
+        }
+        if (mState == STEP_READ) {
+            if (isReadingInProgress) {
+                return;
+            }
+            currentTag = tag;
+            hasSourceTag = true;
+            String uid = Common.bytes2Hex(tag.getId());
+            mTopMessage.setText(getString(R.string.mct_uid_detected_step1, uid));
+            setSubMessage("", false);
+            updateUi(false);
+        } else if (mState == STEP_WRITE && mDumpFile != null) {
+            if (isWritingInProgress) {
+                return;
+            }
+            currentTag = tag;
+            hasTargetTag = true;
+            mTopMessage.setText(R.string.mct_detected_step2);
+            setSubMessage("", false);
+            updateUi(false);
+        }
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent == null) {
+            return;
+        }
 
         final Tag tag;
         if (Build.VERSION.SDK_INT >= 33) {
@@ -122,29 +170,35 @@ public class CopyWizardActivity extends AppCompatActivity {
             tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         }
 
-        if (tag != null) {
-            if (autoMode) {
-                onTagDiscoveredAuto(tag);
-            } else {
-                handleTag(tag);
-            }
+        if (tag == null) {
+            return;
+        }
+
+        if (autoMode) {
+            onTagDiscoveredAuto(tag);
+        } else {
+            handleTag(tag);
         }
     }
 
-    private void handleTag(Tag tag) {
-        currentTag = tag;
-        if (mState == STEP_READ) {
-            String uid = Common.bytes2Hex(tag.getId());
-            mTopMessage.setText(getString(R.string.copy_wizard_uid_recognized, uid));
-            startMappingAndReadTag();
-        } else if (mState == STEP_WRITE && mDumpFile != null) {
-            if (!mBlock0CheckBox.isChecked()) {
-                Toast.makeText(this, R.string.copy_wizard_block0_consent_toast, Toast.LENGTH_LONG).show();
-                return;
-            }
-            mTopMessage.setText(R.string.copy_wizard_write_detected);
-            writeDumpClone();
+    private boolean shouldEnterAutoMode(Intent intent) {
+        if (intent == null) {
+            return false;
         }
+        if (intent.getBooleanExtra(EXTRA_AUTO_MODE, false)) {
+            return true;
+        }
+        String action = intent.getAction();
+        return NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action);
+    }
+
+    private void updateAutoMode(boolean enableAutoMode) {
+        if (enableAutoMode && (!autoMode || autoState == AutoState.DONE)) {
+            autoState = AutoState.IDLE;
+        }
+        autoMode = enableAutoMode;
     }
 
     private void selectAllKeyFiles() {
@@ -152,31 +206,45 @@ public class CopyWizardActivity extends AppCompatActivity {
     }
 
     private void startMappingAndReadTag() {
-        if (currentTag == null) return;
+        if (currentTag == null || isReadingInProgress) {
+            return;
+        }
+        final Tag tag = currentTag;
+        isReadingInProgress = true;
+        setSubMessage(getString(R.string.mct_copy_step1_running), true);
         new Thread(() -> {
             CopyWizardCoordinator coordinator = new CopyWizardCoordinator();
-            File file = coordinator.readAndSaveDump(this, currentTag);
+            File file = coordinator.readAndSaveDump(this, tag);
             String err = coordinator.getLastError();
-            if (file != null) {
-                mDumpFile = file;
-                runOnUiThread(() -> {
+            runOnUiThread(() -> {
+                isReadingInProgress = false;
+                setSubMessage("", false);
+                if (file != null) {
+                    mDumpFile = file;
+                    lastSavedDumpPath = file.getAbsolutePath();
+                    currentTag = null;
+                    hasSourceTag = false;
                     mState = STEP_WRITE;
-                    updateUi();
+                    hasTargetTag = false;
+                    updateUi(true);
                     if (autoMode) {
-                        lastSavedDumpPath = file.getAbsolutePath();
                         autoState = AutoState.WAITING_MODUKEY;
-                        // Prompt user for the writable (MODUKEY) tag using existing strings
-                        mTopMessage.setText(R.string.copy_wizard_write_top);
                     }
-                });
-            } else if (err != null) {
-                runOnUiThread(() -> Toast.makeText(this, err, Toast.LENGTH_LONG).show());
-            }
+                } else {
+                    hasSourceTag = true;
+                    if (err != null) {
+                        Toast.makeText(this, err, Toast.LENGTH_LONG).show();
+                    }
+                    if (autoMode) {
+                        autoState = AutoState.IDLE;
+                    }
+                    updateUi(false);
+                }
+            });
         }).start();
     }
 
     private void enableWriteManufacturerBlock() {
-        mBlock0CheckBox.setVisibility(View.VISIBLE);
         mBlock0CheckBox.setChecked(true);
     }
 
@@ -185,40 +253,103 @@ public class CopyWizardActivity extends AppCompatActivity {
     }
 
     private void writeDumpClone() {
-        if (currentTag == null || mDumpFile == null) return;
+        if (currentTag == null || mDumpFile == null || isWritingInProgress) {
+            return;
+        }
+        final Tag tag = currentTag;
+        enableWriteManufacturerBlock();
+        isWritingInProgress = true;
+        setSubMessage(getString(R.string.mct_copy_step2_running), true);
         new Thread(() -> {
             CopyWizardCoordinator coordinator = new CopyWizardCoordinator();
-            boolean success = coordinator.writeClone(this, currentTag, mDumpFile, mBlock0CheckBox.isChecked());
+            boolean success = coordinator.writeClone(this, tag, mDumpFile, mBlock0CheckBox.isChecked());
             String err = coordinator.getLastError();
             runOnUiThread(() -> {
+                isWritingInProgress = false;
+                currentTag = null;
+                hasTargetTag = false;
+                setSubMessage("", false);
                 if (success) {
-                    Toast.makeText(this, R.string.copy_wizard_clone_finished, Toast.LENGTH_LONG).show();
+                    mTopMessage.setText(R.string.mct_copy_done);
+                    Toast.makeText(this, R.string.mct_copy_done, Toast.LENGTH_LONG).show();
+                    mState = STEP_READ;
+                    hasSourceTag = false;
+                    mDumpFile = null;
                     if (autoMode) {
-                        autoState = AutoState.DONE;
+                        autoState = AutoState.IDLE;
                     }
-                } else if (err != null) {
-                    Toast.makeText(this, err, Toast.LENGTH_LONG).show();
+                    updateUi(false);
+                } else {
+                    if (err != null) {
+                        Toast.makeText(this, err, Toast.LENGTH_LONG).show();
+                    }
+                    mTopMessage.setText(R.string.mct_prompt_present_modukey);
+                    if (autoMode) {
+                        autoState = AutoState.WAITING_MODUKEY;
+                    }
+                    updateUi(false);
                 }
-                mState = STEP_READ;
-                updateUi();
             });
         }).start();
     }
 
+    private void setSubMessage(CharSequence text, boolean blink) {
+        if (text == null || text.length() == 0) {
+            mSubMessage.setText("");
+            mSubMessage.setVisibility(View.GONE);
+            stopBlinking();
+        } else {
+            mSubMessage.setText(text);
+            mSubMessage.setVisibility(View.VISIBLE);
+            if (blink) {
+                startBlinking();
+            } else {
+                stopBlinking();
+            }
+        }
+    }
+
+    private void startBlinking() {
+        if (blinkAnimation == null) {
+            blinkAnimation = new AlphaAnimation(1.0f, 0.2f);
+            blinkAnimation.setDuration(500);
+            blinkAnimation.setRepeatMode(Animation.REVERSE);
+            blinkAnimation.setRepeatCount(Animation.INFINITE);
+        }
+        mSubMessage.startAnimation(blinkAnimation);
+    }
+
+    private void stopBlinking() {
+        if (blinkAnimation != null) {
+            mSubMessage.clearAnimation();
+        }
+    }
+
     private void onTagDiscoveredAuto(Tag tag) {
+        if (tag == null) {
+            return;
+        }
+        if (isReadingInProgress || isWritingInProgress) {
+            return;
+        }
         currentTag = tag;
         switch (autoState) {
             case IDLE: {
+                hasSourceTag = true;
                 String uid = Common.bytes2Hex(tag.getId());
-                mTopMessage.setText(getString(R.string.copy_wizard_uid_recognized, uid));
+                mTopMessage.setText(getString(R.string.mct_uid_detected_step1, uid));
+                setSubMessage("", false);
+                updateUi(false);
                 selectAllKeyFiles();
                 startMappingAndReadTag();
                 autoState = AutoState.READING;
                 break;
             }
             case WAITING_MODUKEY: {
-                mTopMessage.setText(R.string.copy_wizard_write_detected);
-                enableWriteManufacturerBlock();
+                hasTargetTag = true;
+                mTopMessage.setText(R.string.mct_detected_step2);
+                setSubMessage("", false);
+                updateUi(false);
                 if (lastSavedDumpPath != null) {
                     selectDumpFile(lastSavedDumpPath);
                 }
@@ -232,25 +363,29 @@ public class CopyWizardActivity extends AppCompatActivity {
         }
     }
 
-    private void updateUi() {
+    private void updateUi(boolean resetMessages) {
         if (mState == STEP_READ) {
-            mTopMessage.setText(R.string.copy_wizard_read_top);
-            mSubMessage.setText(R.string.copy_wizard_read_sub);
-            mPrimaryButton.setText(R.string.copy_wizard_read_button);
-            mPrimaryButton.setEnabled(true);
-            mSecondaryButton.setText(R.string.copy_wizard_write_button);
+            mPrimaryButton.setVisibility(View.VISIBLE);
+            mPrimaryButton.setText(R.string.mct_copy_start);
+            mPrimaryButton.setEnabled(hasSourceTag && !isReadingInProgress);
+            mSecondaryButton.setVisibility(View.GONE);
             mSecondaryButton.setEnabled(false);
-            mBlock0CheckBox.setVisibility(View.GONE);
-            mBlock0CheckBox.setChecked(false);
+            if (resetMessages) {
+                mTopMessage.setText(R.string.mct_prompt_present_original);
+                setSubMessage("", false);
+            }
         } else if (mState == STEP_WRITE) {
-            mTopMessage.setText(R.string.copy_wizard_write_top);
-            mSubMessage.setText(R.string.copy_wizard_write_sub);
-            mPrimaryButton.setText(R.string.copy_wizard_read_button);
+            mPrimaryButton.setVisibility(View.GONE);
             mPrimaryButton.setEnabled(false);
-            mSecondaryButton.setText(R.string.copy_wizard_write_button);
-            mSecondaryButton.setEnabled(true);
-            mBlock0CheckBox.setVisibility(View.VISIBLE);
-            mBlock0CheckBox.setChecked(false);
+            mSecondaryButton.setVisibility(View.VISIBLE);
+            mSecondaryButton.setText(R.string.mct_copy_step2_start);
+            mSecondaryButton.setEnabled(hasTargetTag && !isWritingInProgress && mDumpFile != null);
+            if (resetMessages) {
+                mTopMessage.setText(R.string.mct_prompt_present_modukey);
+                setSubMessage("", false);
+            }
         }
+        mBlock0CheckBox.setVisibility(View.GONE);
+        mBlock0CheckBox.setChecked(true);
     }
 }
