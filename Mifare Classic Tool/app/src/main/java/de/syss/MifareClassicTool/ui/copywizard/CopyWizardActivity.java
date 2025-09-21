@@ -58,7 +58,7 @@ public class CopyWizardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_copy_wizard);
 
-        autoMode = getIntent().getBooleanExtra(EXTRA_AUTO_MODE, false);
+        autoMode = shouldEnterAutoMode(getIntent());
 
         mTopMessage = findViewById(R.id.top_message);
         mSubMessage = findViewById(R.id.sub_message);
@@ -68,7 +68,9 @@ public class CopyWizardActivity extends AppCompatActivity {
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        int flags = PendingIntent.FLAG_MUTABLE;
+        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                ? PendingIntent.FLAG_MUTABLE
+                : 0;
         mPendingIntent = PendingIntent.getActivity(this, 0, intent, flags);
 
         mPrimaryButton.setOnClickListener(v -> {
@@ -85,6 +87,7 @@ public class CopyWizardActivity extends AppCompatActivity {
         });
 
         updateUi(true);
+        handleIntent(getIntent());
     }
 
     @Override
@@ -111,23 +114,14 @@ public class CopyWizardActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (intent == null) return;
-
-        final Tag tag;
-        if (Build.VERSION.SDK_INT >= 33) {
-            tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
-        } else {
-            //noinspection deprecation
-            tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        if (intent == null) {
+            return;
         }
-
-        if (tag != null) {
-            if (autoMode) {
-                onTagDiscoveredAuto(tag);
-            } else {
-                handleTag(tag);
-            }
+        setIntent(intent);
+        if (intent.hasExtra(EXTRA_AUTO_MODE)) {
+            autoMode = intent.getBooleanExtra(EXTRA_AUTO_MODE, autoMode);
         }
+        handleIntent(intent);
     }
 
     private void handleTag(Tag tag) {
@@ -154,6 +148,43 @@ public class CopyWizardActivity extends AppCompatActivity {
             setSubMessage("", false);
             updateUi(false);
         }
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent == null) {
+            return;
+        }
+
+        final Tag tag;
+        if (Build.VERSION.SDK_INT >= 33) {
+            tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
+        } else {
+            //noinspection deprecation
+            tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        }
+
+        if (tag == null) {
+            return;
+        }
+
+        if (autoMode) {
+            onTagDiscoveredAuto(tag);
+        } else {
+            handleTag(tag);
+        }
+    }
+
+    private boolean shouldEnterAutoMode(Intent intent) {
+        if (intent == null) {
+            return false;
+        }
+        if (intent.getBooleanExtra(EXTRA_AUTO_MODE, false)) {
+            return true;
+        }
+        String action = intent.getAction();
+        return NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action);
     }
 
     private void selectAllKeyFiles() {
