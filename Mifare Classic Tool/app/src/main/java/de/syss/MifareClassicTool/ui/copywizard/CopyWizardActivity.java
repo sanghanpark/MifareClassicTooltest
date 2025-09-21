@@ -68,7 +68,9 @@ public class CopyWizardActivity extends AppCompatActivity {
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        int flags = PendingIntent.FLAG_MUTABLE;
+        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                ? PendingIntent.FLAG_MUTABLE
+                : 0;
         mPendingIntent = PendingIntent.getActivity(this, 0, intent, flags);
 
         mPrimaryButton.setOnClickListener(v -> {
