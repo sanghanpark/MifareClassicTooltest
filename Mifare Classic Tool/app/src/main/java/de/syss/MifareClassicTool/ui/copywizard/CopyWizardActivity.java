@@ -73,8 +73,8 @@ public class CopyWizardActivity extends AppCompatActivity {
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                ? PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+        int flags = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                ? (PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT)
                 : PendingIntent.FLAG_UPDATE_CURRENT;
         mPendingIntent = PendingIntent.getActivity(this, 0, intent, flags);
 
@@ -123,11 +123,13 @@ public class CopyWizardActivity extends AppCompatActivity {
             return;
         }
         setIntent(intent);
+
         boolean nextAutoMode = shouldEnterAutoMode(intent);
         if (intent.hasExtra(EXTRA_AUTO_MODE)) {
             nextAutoMode = intent.getBooleanExtra(EXTRA_AUTO_MODE, nextAutoMode);
         }
         updateAutoMode(nextAutoMode);
+
         handleIntent(intent);
     }
 
@@ -276,7 +278,7 @@ public class CopyWizardActivity extends AppCompatActivity {
                     hasSourceTag = false;
                     mDumpFile = null;
                     if (autoMode) {
-                        autoState = AutoState.IDLE;
+                        autoState = AutoState.DONE;
                     }
                     updateUi(false);
                 } else {
