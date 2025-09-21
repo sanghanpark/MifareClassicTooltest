@@ -58,7 +58,12 @@ public class CopyWizardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_copy_wizard);
 
-        autoMode = shouldEnterAutoMode(getIntent());
+        Intent launchIntent = getIntent();
+        boolean launchAutoMode = shouldEnterAutoMode(launchIntent);
+        if (launchIntent != null && launchIntent.hasExtra(EXTRA_AUTO_MODE)) {
+            launchAutoMode = launchIntent.getBooleanExtra(EXTRA_AUTO_MODE, launchAutoMode);
+        }
+        updateAutoMode(launchAutoMode);
 
         mTopMessage = findViewById(R.id.top_message);
         mSubMessage = findViewById(R.id.sub_message);
@@ -68,9 +73,9 @@ public class CopyWizardActivity extends AppCompatActivity {
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                ? PendingIntent.FLAG_MUTABLE
-                : 0;
+        int flags = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                ? (PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT)
+                : PendingIntent.FLAG_UPDATE_CURRENT;
         mPendingIntent = PendingIntent.getActivity(this, 0, intent, flags);
 
         mPrimaryButton.setOnClickListener(v -> {
@@ -118,9 +123,13 @@ public class CopyWizardActivity extends AppCompatActivity {
             return;
         }
         setIntent(intent);
+
+        boolean nextAutoMode = shouldEnterAutoMode(intent);
         if (intent.hasExtra(EXTRA_AUTO_MODE)) {
-            autoMode = intent.getBooleanExtra(EXTRA_AUTO_MODE, autoMode);
+            nextAutoMode = intent.getBooleanExtra(EXTRA_AUTO_MODE, nextAutoMode);
         }
+        updateAutoMode(nextAutoMode);
+
         handleIntent(intent);
     }
 
@@ -185,6 +194,13 @@ public class CopyWizardActivity extends AppCompatActivity {
         return NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
                 || NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
                 || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action);
+    }
+
+    private void updateAutoMode(boolean enableAutoMode) {
+        if (enableAutoMode && (!autoMode || autoState == AutoState.DONE)) {
+            autoState = AutoState.IDLE;
+        }
+        autoMode = enableAutoMode;
     }
 
     private void selectAllKeyFiles() {
